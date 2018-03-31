@@ -1,0 +1,370 @@
+\documentclass[11pt]{article}
+
+%\pagestyle{empty}
+
+\hyphenation{con-si-de-ra-to}
+
+%\textwidth=182mm
+%\textheight=230mm
+%\hoffset=-31mm                  % horizontal offset
+%\voffset=-30mm                  % vertical offset
+
+\usepackage[margin=.775in]{geometry}
+
+\usepackage[usenames]{color}
+%\usepackage[mathcal]{eucal}
+\usepackage{epsfig}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{amsfonts}
+\usepackage{enumerate}
+\usepackage{amsthm}
+\usepackage{dsfont}
+\usepackage[usenames]{color}
+\usepackage{wrapfig}
+\usepackage{graphicx}
+\usepackage{blindtext}
+\usepackage{enumerate}
+\usepackage{fancyvrb}
+
+
+\usepackage{lscape}
+
+\usepackage{color,hyperref}
+\definecolor{darkblue}{rgb}{0.0,0.0,.45}
+\definecolor{darkred}{rgb}{0.7,0,0}
+\hypersetup{colorlinks,breaklinks,
+	linkcolor=darkred,urlcolor=darkred,
+	anchorcolor=darkred}
+
+
+\newcommand{\myparallel}{{\mkern3mu\vphantom{\perp}\vrule depth 0pt\mkern2mu\vrule depth 0pt\mkern3mu}}
+
+\newcommand{\qq}{\mathbf{q}}
+\newcommand{\qqd}{\mathbf{\dot{q}}}
+\newcommand{\ind}{\mathds{1}} % so $\ind{1}$ gives you the script 1
+\newcommand{\gul}[2]{g^{#1 ,}_{\textcolor{White}{#1}#2\ }}
+
+\theoremstyle{plain}
+\newtheorem{corollary}{Corollary}
+\newtheorem{proposition}{Proposition}
+\newtheorem{lemma}{Lemma}
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}
+\newtheorem{example}{Example}
+\newtheorem{case}{Case}
+\newtheorem{conj}{Conjecture}
+\newtheorem*{remark}{Remark}
+\newtheorem*{notation}{Notation}
+%\newtheorem{fc1}{From Chapter 1 of Millman \& Parker:}
+%\newtheorem{fc2}{From Chapter 1 of Millman \& Parker:}
+\newtheorem{problem}{Problem}
+\newtheorem{theorem}{Theorem}
+%\renewcommand*{\theproblem}{\hwn\Alph{problem}}
+\renewcommand*{\theproblem}{\hwn.\arabic{problem}}
+%\newtheorem{theorem}{Theorem}
+\theoremstyle{remark}
+
+\parindent=0cm
+
+\newcommand{\hwn}{1}
+
+\begin{document}
+\LARGE
+\noindent{\textsf{\textbf{CGU Math 381 (Image Processing), Spring '18 
+			-- Homework \#\hwn}}}
+\par\vspace{.25cm}
+\Large
+\hspace{.5cm}\textsf{\mbox{%
+Point operations, filters, and partial differential operators. 
+}}
+\par\vspace{.2cm}
+\normalsize
+\hspace{.5cm}\mbox{\textsf{\em Due 
+		on Tuesday 2/6, at the beginning of class. }%
+}
+\par\vspace{.3cm}
+\normalsize\rm
+%$\boxed{\mbox{ \bf This homework assignment is on two
+%		 pages. }}$ \par\vspace{.3cm}
+\bf Reading: \rm
+While the class notes should be sufficient 
+for this homework assignment, it is still useful to read 
+Chapters~1 to~6 of \em Principles of Digital Image
+Processing \em by Burger \& Burge. You may skip
+all the parts that refer to Java implementations
+and ImageJ (for example, all of Chapter~2), unless they are of interest to you. The most important chapters are, for our purposes, Chapter~3 to
+Chapter~6.
+\par\vspace{.15cm}
+Write, on top of the first page of your assignment:
+Name (\underline{LAST}, First), your University or College, the HW\#, and acknowledge other students
+with whom you may have worked (just write \mbox{``\em Worked with \ldots\/\em''}). For the computational problems 
+where you are asked to write computer code you may choose 
+the programming language that you prefer, such as \em Python \em 
+(I am learning it myself!) or
+\em Matlab\em\/.
+%\par\vspace{.15cm}
+%Solve the following problems:
+\begin{problem}
+Suppose that an image has all its pixel values clustered in a small
+interval---say, in $[a,b]\subset[0,L-1]$, with $0<a<b<L-1$.
+The image needs to be enhanced, so that the small range~$[a,b]$
+maps to a the range~$[0 ,L-1]$. What operation 
+$S:[0,L-1]\rightarrow[0 ,L-1]$ would you
+use for this purpose?
+\end{problem}
+\begin{problem}[$\gamma$-correction]
+Remember that \em gamma correction \em is
+a point operation defined as follows:
+$$
+J(i,j) = (L-1)\Big(\frac{I(i,j)}{L-1}\Big)^\gamma,
+\qquad
+\mbox{for }
+(i,j)\in\mathbb{D}=
+\{0,1,\ldots,M\}
+\times
+\{0,1,\ldots,N\}, 
+$$
+where $L-1=2^b-1$ is typically 255, and $\gamma $ is a positive 
+constant chosen by the user. 
+{\bf(a)}~Using software of your choice, plot on the same figure
+the graphs of the function
+$S_\gamma:[0,L-1]\rightarrow[0,L-1]$, 
+where~$s=S_\gamma(r)=(L-1)[r/(L-1)]^{\gamma}$,
+for the following values of~$\gamma$:
+0.04, 0.1, 0.2, 0.4, 0.61, 1, 1.5, 2.5, 5, 10, and 25.  
+{\bf(b)}~Fix an arbitrary value of~$\gamma$: what is the \em inverse \em transformation~$S_\gamma^{-1}$, i.e.~the function such that
+$S_\gamma^{-1}(S(r))=r$? 
+{\bf(c)} Consider now the images \tt image-spine.tif \rm and 
+\tt image-airport.tif\rm.
+The first looks too dark, while the other looks too bright. 
+Write computer code\footnote{For implementation purposes, 
+note that we can write $a^{\gamma}=e^{\gamma\ln a}$.} 
+to adjust the brightness of the images by applying 
+gamma corrections with appropriate values of the 
+parameter $\gamma$ (remember that the output values must be 
+rounded off so to be in the set $\mathbb{P}=\{0,1,2,\ldots,L-1\}$). 
+Show your results, and also plot the \em histograms \em of
+the original images as well as the transformed images. 
+Provide your code.
+\end{problem}
+\begin{problem}
+Apply a $3\times3$ averaging filter to the image
+\tt image-lena-noisy.png\rm, which is the classic
+Lena\footnote{\em Lena \em is the name given to a standard test image widely used in the field of image processing since 1973. It is in fact a photo of Lena S\"oderberg, shot by photographer Dwight Hooker, cropped from the centerfold of the November 1972 issue of Playboy magazine (!). 
+She was a guest at the \mbox{50th annual Conference of the Society for Imaging Science and Technology in 1997.}} image with 
+added Gaussian noise. Also try a $5\times5$ uniform filter, and a non-uniform 
+averaging $5\times5$ filter (`Gaussian mask').
+\mbox{In general, what do you observe in your result if
+you apply larger filter masks?}  
+\end{problem}
+\begin{problem}
+The median filter (see the class notes) is the most suitable 
+to deal with \em salt-and-pepper \em noise. 
+{\bf(a)}~Show that a median filter is \em nonlinear\em\/.
+{\bf(b)}~Write computer code to apply a $3\times3$ median filter to \tt image-circuit.jpg\rm, 
+which is an x-ray image of a circuit board corrupted by salt-and-pepper
+noise. 
+{\bf(c)}~Now apply a $3\times3$ linear average filter to \tt image-circuit.jpg\rm. Why is the result so different?
+\end{problem}
+\begin{problem}
+	\label{assoc}
+Show that convolution is an \em associative \em operation,
+i.e.~that for three arbitrary functions $f,g,h:\mathbb{Z}^2\rightarrow\mathbb{R}$ it is the case that 
+$f*(g*h)=(f*g)*h$.
+\end{problem}
+\begin{problem}[3-point midpoint formula for the second derivative]
+\label{sder}
+Remember from class (and Numerical Analysis, if you have taken that course) the so-called \em forward difference \em 
+and \em backward difference \em formulas: 
+\par\vspace{.1cm}
+\hfill
+$
+\displaystyle
+f'(x)\simeq\frac{f(x+\Delta x)-f(x)}{\Delta x}
+\qquad
+\mbox{and}
+\qquad
+f'(x)\simeq\frac{f(x)-f(x-\Delta x)}{\Delta x}
+$
+\hfill\mbox{}\par\vspace{.1cm}
+for numerical differentiation. 
+Combine the two to find the 3-point midpoint formula
+for the numerical computation of the second derivative
+of a function,
+namely
+$f''(x)\simeq(f(x+\Delta x)-2f(x)+f(x-\Delta x))/(\Delta x)^2$.
+\end{problem}
+\begin{problem}
+	The result of Problem~\ref{assoc} 
+	shows that if we want to apply two filters
+	(with convolution kernels $g$ and $h$, respectively)
+	to a given image~$I$ one after the other, it is the case
+	that $(I\ast g)\ast h = I\ast(g\ast h)$.
+	In other words, we can combine the two convolution
+	kernels into one, $f=g\ast h$, and then filter
+	the image with the \em new \em kernel by computing~$I\ast f$. 
+	In class we introduced several kernels for computing
+	$\frac{\partial I}{\partial x}$, namely: 
+	$$
+	h_x = 
+	\left[
+	\begin{array}{ccc}
+	h_x(-1,-1) & h_x(-1,0) & h_x(-1,1) \\
+	h_x(0,-1) & h_x(0,0) & h_x(0,1) \\
+	h_x(1,-1) & h_x(1,0) & h_x(1,1) 
+	\end{array}
+	\right]
+	=
+	\frac{1}{2}
+	\left[
+	\begin{array}{ccc}
+	0 & 1 & 0 \\
+	0 & 0 & 0 \\
+	0 & -1 & 0 
+	\end{array}
+	\right],
+	$$
+	$$
+	h^P_x = 
+	\frac{1}{6}
+	\left[
+	\begin{array}{ccc}
+	1 & 1 & 1 \\
+	0 & 0 & 0 \\
+	-1 & -1 & -1 
+	\end{array}
+	\right],
+ 	\qquad
+ 	h^S_x = 
+ 	\frac{1}{8}
+ 	\left[
+ 	\begin{array}{ccc}
+ 	1 & 2 & 1 \\
+ 	0 & 0 & 0 \\
+ 	-1 & -2 & -1 
+ 	\end{array}
+ 	\right].
+	$$
+The first one is derived from the 3-point midpoint formula
+for numerical differentiation,
+the second one is the \em Prewitt \em filter
+(which is obtained from $h_x$ by averaging over 3
+horizontal pixels, with equal weights),
+while the last one is the \em Sobel \em filter
+(which is obtained from $h_x$ by averaging over 3
+horizontal pixels, with weights 1/4, 1/2, and 1/4).
+We also introduced the following filter
+for the \em second \em partial derivative
+$\frac{\partial^2}{\partial x^2}$:
+$$
+h_{xx} 
+= 
+\left[
+\begin{array}{ccc}
+h_{xx}(-1,-1) & h_{xx}(-1,0) & h_{xx}(-1,1) \\
+h_{xx}(0,-1) & h_{xx}(0,0) & h_{xx}(0,1) \\
+h_{xx}(1,-1) & h_{xx}(1,0) & h_{xx}(1,1) 
+\end{array}
+\right]
+= 
+\left[
+\begin{array}{ccc}
+0 & 1 & 0 \\
+0 & -2 & 0 \\
+0 & 1 & 0 
+\end{array}
+\right],
+$$
+for which we used the 3-point midpoint formula for the second derivative,
+which you found in Problem~\ref{sder}. However,
+since we can compute a second partial derivative by performing
+a single partial derivative \em twice \em
+in the same direction, the above reasoning suggests that we may 
+approximate $\partial^2I/\partial x^2$ with
+$I\ast f$: here, $f=h\ast g$ where $h$ and $g$
+may be chosen independently as either~$h_x$, $h^P_x$, or
+$h^S_x$. In how many ways can this be done?
+Also, what are the effects of choosing $f=h_x\ast h_x$
+rather than, say, $f=h_x\ast h^P_x$? Compute, either by
+hand or using some computer code, the convolution kernel
+$f=h_x\ast h_x^S$. What is its size?
+\end{problem}
+\begin{problem}[Mixed partials]
+	Suggest a convolution kernel~$h_{xy}$
+	such that 
+	$
+	\displaystyle 
+	\frac{\partial^2 I}{\partial x\partial y}
+	\simeq I\ast h_{xy}$.
+	\par\vspace{-.15cm}
+	{\em Hint:}
+	There are multiple correct answers to this question.
+\end{problem}
+\begin{problem}(Rotation invariance of the Laplacian operator.)
+Show that the Laplacian operation 
+$\nabla^2f=\frac{\partial^2f}{\partial x^2}+\frac{\partial^2f}{\partial y^2}$ is \em isotropic \em (i.e.~invariant under rotations, or rotationally invariant). That is, we choose an arbitrary 
+angle~$\theta$ and operate the change of 
+coordinates $T:(x,y)\mapsto(u,v)$ given by the transformation: 
+$$
+T:
+\left\{
+\begin{array}{ccl}
+x(u,v) & = & u\cos\theta - v \sin\theta \\
+y(u,v) & = & u\sin\theta + v \cos\theta 
+\end{array}
+\right.
+\qquad
+\Longleftrightarrow
+\qquad
+T^{-1}:
+\left\{
+\begin{array}{ccl}
+u(x,y) & = & x\cos\theta + y \sin\theta \\
+v(x,y) & = & -x\sin\theta + y \cos\theta 
+\end{array}
+\right.
+$$ 
+where $(x,y)$ are the unrotated and $(u,v)$ are the rotated coordinates.
+Define the composite function $F(u,v)=f(x(u,v),y(u,v))$, 
+which is nothing but $f$ expressed in the new coodrinates, and show that
+$
+\frac{\partial^2 F}{\partial u^2}(u,v)+\frac{\partial^2 F}{\partial v^2}(u,v)
+=
+\frac{\partial^2 f}{\partial x^2}(x(u,v),y(u,v))+\frac{\partial^2 f}{\partial y^2}(x(u,v),y(u,v))
+$. Equivalently, since we have $f(x,y)=F(u(x,y),v(x,y))$, you can show that
+$
+\frac{\partial^2 f}{\partial x^2}(x,y)+\frac{\partial^2 f}{\partial v^2}(x,y)
+=
+\frac{\partial^2 F}{\partial u^2}(u(x,y),v(x,y))+\frac{\partial^2 F}{\partial v^2}(u(x,y),v(x,y))
+$). That is, the Laplacian operator ``looks the same''
+in a new coordinate system that is obtained by rotating the original one
+by an arbitrary angle~$\theta$. This is what we call \em isotropy\em\/, or \em rotational invariance \em of $\nabla^2$.
+\end{problem}
+\begin{problem}[A basic sharpening filter.]
+Write a computer program that implements the operation 
+$J(x,y)=I-\nabla^2 I$, in the form $J=I\ast h^{\mathrm{Sh}}$ with
+a $3\times 3$ sharpening convolution kernel~$h^{\mathrm{Sh}}$. Give the form of the convolution kernel
+apply the program to the image of the
+North Pole of the moon (\tt image-moon.jpg\rm). You should turn in the the computer code, the input and output images, as well
+as a short explanation of why the method works. 
+\end{problem}
+\end{document}
+
+
+
+
+
+
+
+
+
+
+
+
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:
