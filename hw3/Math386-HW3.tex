@@ -29,6 +29,35 @@
 \usepackage{fancyvrb}
 \usepackage{esint}
 
+\usepackage{listings}
+\usepackage{color}
+ 
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+ 
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+ 
+\lstset{style=mystyle}
+
 \usepackage{lscape}
 
 \usepackage{color,hyperref}
@@ -345,8 +374,29 @@ to rotations about the~$z$-axis, you may just plot the cross section for~$v=0$).
 	
 	Hence,
 	\begin{equation*}
-	\mathcal{L}(u,v) =  (1+a+aH(u,v)) = (1+a-ae^{-2\pi a^2(u^2+v^2)})
+	\mathcal{L}(u,v) =  (1+a+aH(u,v)) = (1+a-ae^{-2\pi \sigma^2(u^2+v^2)})
 	\end{equation*}
+	
+	\begin{lstlisting}[language=Python, caption=Python Implementation of for Q6]
+		import numpy as np
+		import matplotlib.pyplot as plt
+		%matplotlib inline
+		from math import exp, pi
+		a = 0.8
+		sigma = 1
+		u = np.linspace(start=-1, stop=1, dtype=np.float32)
+		L = [1+a-a*exp(-2*pi*sigma**2*x**2) for x in u]
+		fig = plt.figure(figsize=(8, 6))
+		plt.plot(u,L)
+		plt.show()
+		fig.savefig('q6.png', dpi=fig.dpi)
+	\end{lstlisting}
+	
+	\begin{figure}[h]
+		\centering
+		\includegraphics[width=\textwidth]{q6.png}
+		\caption{$\mathcal{L}(u,v)$ with $v=0$}
+	\end{figure}
 	
 \end{solution}
 %\clearpage
@@ -577,6 +627,195 @@ can play with. For my own code, I have used a $9\times 9$
 filter~$w$ of ones, $\alpha =0.05$, and a threshold for~$Q_\alpha$ of~$t=10^7$.
 \end{enumerate}
 \end{problem}
+
+\begin{solution}
+
+	\begin{enumerate}
+		\item[a] \mbox{}\\		  
+			\begin{lstlisting}[language=Python, caption=Plot the corner response function]
+				import numpy as np
+				import matplotlib.pyplot as plt
+				%matplotlib inline
+				alpha = 0.10
+				l1 = np.linspace(start=0, stop=0.5, dtype=np.float32)
+				l2 = np.linspace(start=0, stop=0.5, dtype=np.float32)
+				lambda1,lambda2 = np.meshgrid(l1, l2)
+				Q = lambda1*lambda2 - alpha*np.power(lambda1+lambda2,2)
+				fig = plt.figure(figsize=(8, 6))
+				plt.contour(lambda1, lambda2, Q)
+				plt.show()
+				fig.savefig('q9.png', dpi=fig.dpi)
+			\end{lstlisting}
+			
+			\begin{figure}[h]
+				\centering
+				\includegraphics[width=\textwidth]{q9.png}
+				\caption{Plot of the corner response function}
+			\end{figure}
+		
+		\item[b] \mbox{}\\
+			\begin{lstlisting}[language=Python, caption=Implementation of function $Q_a$]
+				def getHarrisCornerResponse(I, h, alpha, threshold=0.8):
+					    '''
+					    This function calculate the Harris corner response funciton
+					    
+					    Inputs:
+					    * I: 2*2 array of Image with grey levels
+					    * h: filter, uniform, gaussian, etc.
+					    * alpha: parameter of the corner response equation
+					    * threshold: if <1, apply threshold based on the maximum of corner response value, otherwise, directly apply input value
+					    
+					    Outputs:
+					    * Q: Matrix container response value
+					    * coordinates: 
+					        tuple contains two arrays, 
+					            first array is the x coordiate of the potins has corner response value larger than threshold
+					            second array is the y coordiate of the potins has corner response value larger than threshold
+					    '''
+					    (M,N) = I.shape
+					    hx = np.array([[0,0.5,0],[0,0,0],[0,-0.5,0]])
+					    Ix = scipy.ndimage.filters.convolve(I,hx)
+					    Ix2 = np.power(Ix, 2)
+					    hy = hx.transpose()
+					    Iy = scipy.ndimage.filters.convolve(I,hy)
+					    Iy2 = np.power(Iy, 2)
+					    IxIy =  scipy.ndimage.filters.convolve(Ix,hy)
+					    ul =  scipy.ndimage.filters.convolve(Ix2,h)
+					    ur =  scipy.ndimage.filters.convolve(IxIy,h)
+					    bl =  scipy.ndimage.filters.convolve(IxIy,h)
+					    br = scipy.ndimage.filters.convolve(Iy2,h)
+					    Q_alpha = np.zeros((M,N))
+					    for i_ind in range(M):
+					        for j_ind in range(N):
+					            m_bar = np.array([[ul[i_ind,j_ind], ur[i_ind,j_ind]],[bl[i_ind,j_ind],br[i_ind,j_ind]]])
+					            Q_alpha[i_ind,j_ind] = np.linalg.det(m_bar) - alpha*(np.trace(m_bar))**2
+					    if threshold<=1:
+					        t = np.max(Q_alpha)*threshold
+					    else:
+					        t= threshold
+					    coordinates = np.where(Q_alpha>t)
+					    return Q_alpha, coordinates
+			\end{lstlisting}
+			
+			\begin{lstlisting}[language=Python, caption=house with uniform filter]
+				n = 3
+				w = np.ones(shape=(n,n))
+				h = w
+				Q,coordinates = getHarrisCornerResponse(I,h,0.05, 0.03)
+				fig=plt.figure(1,figsize=(M/20,N/20))
+				plt.imshow(I,cmap=cm.gray,vmin=0,vmax=255)
+				plt.scatter(coordinates[1],coordinates[0],c='r', s=5)
+				plt.axis('off')
+				fig.savefig('q9_house_uniform_filter.png', dpi=fig.dpi)
+			\end{lstlisting}
+			
+			\begin{figure}[h]
+				\centering
+				\includegraphics[width=\textwidth]{q9_house_uniform_filter.png}
+				\caption{house with uniform filter}
+			\end{figure}
+			
+			\begin{lstlisting}[language=Python, caption=house with gaussian filter]
+				def gaussian(x,y,sigma):
+				    return exp(-(x**2+y**2)/(2*sigma**2))
+				n = 5
+				sigma=1
+				_hG = np.array([[ gaussian(r, c, sigma) for c in range(int(-(n-1)/2),int((n-1)/2 + 1))] 
+				                for r in range(int(-(n-1)/2),int((n-1)/2 + 1))])
+				hG = _hG/np.sum(_hG)
+				Q,coordinates = getHarrisCornerResponse(I,hG,0.05, 0.01)
+				fig=plt.figure(1,figsize=(M/20,N/20))
+				plt.imshow(I,cmap=cm.gray,vmin=0,vmax=255)
+				plt.scatter(coordinates[1],coordinates[0],c='r', s=5)
+				plt.axis('off')
+				fig.savefig('q9_house_gaussian_filter.png', dpi=fig.dpi)
+			\end{lstlisting}
+			
+			\begin{figure}[h]
+				\centering
+				\includegraphics[width=\textwidth]{q9_house_gaussian_filter.png}
+				\caption{house with gaussian filter}
+			\end{figure}
+			
+			\begin{lstlisting}[language=Python, caption=polygon with uniform filter]
+				n = 3
+				w = np.ones(shape=(n,n))
+				h = w
+				Q,coordinates = getHarrisCornerResponse(I,h,0.05, 1e7)
+				fig=plt.figure(1,figsize=(M/20,N/20))
+				plt.imshow(I,cmap=cm.gray,vmin=0,vmax=255)
+				plt.scatter(coordinates[1],coordinates[0],c='r', s=5)
+				plt.axis('off')
+				fig.savefig('q9_polygons_uniform_filter.png', dpi=fig.dpi)
+			\end{lstlisting}
+			
+			\begin{figure}[h]
+				\centering
+				\includegraphics[width=\textwidth]{q9_polygons_uniform_filter.png}
+				\caption{polygon with uniform filter}
+			\end{figure}
+			
+			\begin{lstlisting}[language=Python, caption=polygon with gaussian filter]
+				n = 5
+				sigma=1
+				_hG = np.array([[ gaussian(r, c, sigma) for c in range(int(-(n-1)/2),int((n-1)/2 + 1))] 
+				                for r in range(int(-(n-1)/2),int((n-1)/2 + 1))])
+				hG = _hG/np.sum(_hG)
+				Q,coordinates = getHarrisCornerResponse(I,hG,0.05, 0.1)
+				fig=plt.figure(1,figsize=(M/20,N/20))
+				plt.imshow(I,cmap=cm.gray,vmin=0,vmax=255)
+				plt.scatter(coordinates[1],coordinates[0],c='r', s=5)
+				plt.axis('off')
+				fig.savefig('q9_polygons_gaussian_filter.png', dpi=fig.dpi)
+			\end{lstlisting}
+			
+			\begin{figure}[h]
+				\centering
+				\includegraphics[width=\textwidth]{q9_polygons_gaussian_filter.png}
+				\caption{polygon with gaussian filter}
+			\end{figure}
+			
+			\begin{lstlisting}[language=Python, caption=grand mosque with uniform filter]
+				n = 3
+				w = np.ones(shape=(n,n))
+				h = w
+				Q,coordinates = getHarrisCornerResponse(I,h,0.05, 0.05)
+				fig=plt.figure(1,figsize=(M/20,N/20))
+				plt.imshow(I,cmap=cm.gray,vmin=0,vmax=255)
+				plt.scatter(coordinates[1],coordinates[0],c='r', s=5)
+				plt.axis('off')
+				fig.savefig('q9_uae_uniform_filter.png', dpi=fig.dpi)
+			\end{lstlisting}
+			
+			\begin{figure}[h]
+				\centering
+				\includegraphics[width=\textwidth]{q9_uae_uniform_filter.png}
+				\caption{grand mosque with uniform filter}
+			\end{figure}
+			
+			\begin{lstlisting}[language=Python, caption=grand mosque with gaussian filter]
+				n = 5
+				sigma=1
+				_hG = np.array([[ gaussian(r, c, sigma) for c in range(int(-(n-1)/2),int((n-1)/2 + 1))] 
+				                for r in range(int(-(n-1)/2),int((n-1)/2 + 1))])
+				hG = _hG/np.sum(_hG)
+				Q,coordinates = getHarrisCornerResponse(I,hG,0.05, 0.1)
+				fig=plt.figure(1,figsize=(M/20,N/20))
+				plt.imshow(I,cmap=cm.gray,vmin=0,vmax=255)
+				plt.scatter(coordinates[1],coordinates[0],c='r', s=5)
+				plt.axis('off')
+				fig.savefig('q9_uae_gaussian_filter.png', dpi=fig.dpi)
+			\end{lstlisting}
+			
+			\begin{figure}[h]
+				\centering
+				\includegraphics[width=\textwidth]{q9_uae_gaussian_filter.png}
+				\caption{grand mosque with gaussian filter}
+			\end{figure}
+			
+	\end{enumerate}
+
+\end{solution}
 
 
 \end{document}
